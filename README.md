@@ -10,4 +10,6 @@ During my MPHYS at UoM I decided to take a module on object-oriented programming
   <li> Templating </li>
 </ul>
 
-The program used a number of header and source files and was compiled using Visual Studio 2013 as required by the course. 
+In a nod to my grandfather, TBS, I decided to try to make a chess engine and was successful in doing so.
+
+The program used a number of header and source files and was compiled using Visual Studio 2013, as required by the course. 
