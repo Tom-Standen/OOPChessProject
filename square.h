@@ -35,6 +35,7 @@ public:
 	void PrintSecondRow() const;
 	void PrintThirdRow() const;
 	//Move assignment for moving pieces (but not square colour)
+
 	square &operator=(square&& moved){
 		//move a piece from one square to another
 		//don't want to move square colour but do want to move piece

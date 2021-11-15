@@ -1310,6 +1310,3 @@ std::pair<std::set<std::pair<int, int>>, std::set<std::pair<int, int>>> king::mo
 	}
 	return std::make_pair(available_moves, king_path);
 }
-
-
-

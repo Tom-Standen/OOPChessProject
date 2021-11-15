@@ -26,15 +26,19 @@ public:
 	~game(){}
 	//Methods
 	//Get + Add turn and game 
+
 	int GameNumber() const { return m_game_counter; }
 	int TurnNumber() const { return m_turn_counter; }
 	void AddTurn() { m_turn_counter += 1; }
 	void AddGame() { m_game_counter += 1; }
+
 	//Get + Add players
+
 	void AddPlayer1(player p1) { m_player1 = p1; }
 	void AddPlayer2(player p2) { m_player2 = p2; }
 	player Player1() { return m_player1; }
 	player Player2() { return m_player2; }
+
 	//Set + Get where the moving piece is: Moving From
 	std::pair<int, int> MoveFrom(){ return m_movefrom; }
 	void SetMoveFrom(std::pair<int, int> movefrompair){ m_movefrom = movefrompair; }

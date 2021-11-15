@@ -32,4 +32,5 @@ public:
 	//check that the squares not empty and that the piece belongs to the player
 	void print_lost(); //some function for printing out lost pieces for either team
 	
+
 };
