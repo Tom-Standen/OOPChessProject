@@ -32,23 +32,23 @@ public:
 	void PrintSecondRow() const;
 	void PrintThirdRow() const;
 	//Move, Copy assignment
-	/*square &operator=(square& copied){
+	square &operator=(square&& moved){
+		//move a piece from one square to another
+		//don't want to move square colour but do want to move piece
+		m_on_square.reset();
+		m_on_square = moved.m_on_square;
+		moved.m_on_square.reset();
+		moved.m_on_square = nullptr;
+		return (*this);
+	}
+	/*
+	square &operator=(square& copied){
 	//deep copy one square to another
 	//need to block self assingment
 	if (&copied == this) { return (*this); }
 	//copy data across
 	m_sq_colour = copied.m_sq_colour;
 	m_on_square = copied.m_on_square;
-	return (*this);
-	}
-	/*
-	square &operator=(square&& moved){
-	//move a piece from one square to another
-	//don't want to move square colour but do want to move piece
-	m_on_square.reset();
-	m_on_square = std::make_shared<>(moved.m_on_square);
-	moved.m_on_square.reset();
-	moved.m_on_square = std::make_shared<piece>(nullptr);
 	return (*this);
 	}*/
 };

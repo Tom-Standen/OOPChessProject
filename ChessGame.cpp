@@ -130,7 +130,18 @@ std::pair<int,int> decode(std::string letter_code){
 
 //}
 */
-
+///////////////////PLAYER METHOD DEFINITIONS////////////////
+player::player(std::string name, std::string colour){
+	m_player_colour = colour;
+	m_player_name = name;
+	//add the starting piece positions 00-17 fow white and 60,77 for black
+	std::vector<int> start_rows{0, 1, 6, 7 };
+	for (auto row_it = start_rows.begin(); row_it != start_rows.end(); row_it++){
+		for (int col_it{ 0 }; col_it < board_cols; col_it++){
+			m_piece_positions.push_back(std::make_pair((*row_it), col_it));
+		}
+	}
+}
 
 ////BOARD METHOD DEFINITIONS////
 //constructors
@@ -170,10 +181,11 @@ void board::init(){
 	m_square_2Dvector[7][6] = square("White", std::make_shared<knight>("Black"));
 	m_square_2Dvector[7][7] = square("Black", std::make_shared<rook>("Black"));
 	//Set the colour of the squares in middle four rows
-	bool black = true;
-	for (int row{ 2 }; row < 6; row++){
+	bool black;
+	for (int row{ 0 }; row < 8; row++){
 		//Third row (row==2) starts with a black square
-		((row % 2 == 0) ? black = true : black = false);
+		//other way than I thought but still works
+		(((row % 2) == 0) ? black = false : black = true);
 		for (int col{ 0 }; col < board_cols; col++){
 			if (black == true){
 				m_square_2Dvector[row][col].SetColour("Black");
@@ -435,7 +447,7 @@ void square::PrintThirdRow() const {
 
 ////////////////ROOK/////////////////////
 
-std::set<std::pair<int, int>> rook::moves(const board& b, const int& row, const int& col){
+std::set<std::pair<int, int>> rook::moves(board& b, const int& row, const int& col){
 	std::string moving_colour = b(row, col).GetPieceColour();
 	std::pair<int, int> good_move;
 	//std::pair<int, int> no_move = std::make_pair(8, 8);
@@ -443,98 +455,85 @@ std::set<std::pair<int, int>> rook::moves(const board& b, const int& row, const 
 	bool path_block = false;
 	//check spaces in front of piece (behind if black)
 	for (int for_step{ row + 1 }; for_step < (board_rows); for_step++){
-		while (!path_block){
-			if (b(for_step, col).isempty()){
+		if (b(for_step, col).isempty()){
+			good_move.first = for_step;
+			good_move.second = col;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(for_step, col).GetPieceColour()){
 				good_move.first = for_step;
 				good_move.second = col;
-				available_moves.insert(good_move);
+				available_moves.insert(good_move);	
 			}
-			else{//the square has a piece on it, so block path
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(for_step, col).GetPieceColour()){
-					good_move.first = for_step;
-					good_move.second = col;
-					available_moves.insert(good_move);	
-				}
-			}
-		 }
+		}
+		if (path_block){ break; }
 	}
 	//check spaces behind piece (front if black piece)
 	//reset path_block
 	path_block = false;
 	for (int back_step{ row - 1 }; back_step > (-1); back_step--){
-		while (!path_block){
-			if (b(back_step, col).isempty()){
+		if (b(back_step, col).isempty()){
+			good_move.first = back_step;
+			good_move.second = col;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path 
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(back_step, col).GetPieceColour()){
 				good_move.first = back_step;
 				good_move.second = col;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path 
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(back_step, col).GetPieceColour()){
-					good_move.first = back_step;
-					good_move.second = col;
-					available_moves.insert(good_move);
-				}
-			}
-		} 
+		}
+		if (path_block) { break; }
 	}
 	//check spaces to the left of rook
 	path_block = false;
 	for (int left_step{ col - 1 }; left_step > (-1); left_step--){
-		while (!path_block){
-			if (b(row, left_step).isempty()){
+		if (b(row, left_step).isempty()){
+			good_move.first = row;
+			good_move.second = left_step;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path 
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(row, left_step).GetPieceColour()){
 				good_move.first = row;
 				good_move.second = left_step;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path 
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(row, left_step).GetPieceColour()){
-					good_move.first = row;
-					good_move.second = left_step;
-					available_moves.insert(good_move);
-				}
-			}
 		}
+		if (path_block) { break; }
 	}
 	//check spaces to the right of piece
 	path_block = false;
 	for (int rt_step{ col + 1 }; rt_step < (board_cols); rt_step++){
-		while (!path_block){
-			if (b(row, rt_step).isempty()){
+		if (b(row, rt_step).isempty()){
+			good_move.first = row;
+			good_move.second = rt_step;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path 
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(row, rt_step).GetPieceColour()){
 				good_move.first = row;
 				good_move.second = rt_step;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path 
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(row, rt_step).GetPieceColour()){
-					good_move.first = row;
-					good_move.second = rt_step;
-					available_moves.insert(good_move);
-				}
-			}
 		}
+		if (path_block) { break; }
 	}
-	//if there are no moves need to return something to stop function crashing
-	/*
-	if (available_moves.empty()){
-		available_moves.insert(no_move);
-		return available_moves;
-	}
-	else{
-		return available_moves;
-	}*/
 	return available_moves;
 }
 
 //////////////////BISHOP//////////////////////
-std::set<std::pair<int, int>> bishop::moves(const board& b, const int& row, const int& col){
+std::set<std::pair<int, int>> bishop::moves(board& b, const int& row, const int& col){
 	std::string moving_colour = b(row, col).GetPieceColour();
 	std::pair<int, int> good_move;
 	std::set<std::pair<int, int>> available_moves;
@@ -543,24 +542,22 @@ std::set<std::pair<int, int>> bishop::moves(const board& b, const int& row, cons
 	for (int row_step{ row + 1 }; row_step < (board_rows); row_step++){
 		for (int col_step{ col + 1 }; col_step < (board_cols); col_step++){
 			if ((row_step - row) == (col_step - col)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
-
 				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	// forward left diagonal (for white)
@@ -568,23 +565,22 @@ std::set<std::pair<int, int>> bishop::moves(const board& b, const int& row, cons
 	for (int row_step{ row + 1 }; row_step < (board_rows); row_step++){
 		for (int col_step{ col - 1 }; col_step > -1 ; col_step--){
 			if ((row_step - row) == (col - col_step)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
 				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	// back left diagonal (for white)
@@ -592,57 +588,60 @@ std::set<std::pair<int, int>> bishop::moves(const board& b, const int& row, cons
 	for (int row_step{ row - 1 }; row_step > -1 ; row_step--){
 		for (int col_step{ col + 1 }; col_step < (board_cols); col_step++){
 			if ((row - row_step) == (col_step - col)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
 				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	// back left diagonal (for white)
 	path_block = false;
 	for (int row_step{ row - 1 }; row_step > -1; row_step--){
-		for (int col_step{ col - 1 }; col_step > 0; col_step--){
+		for (int col_step{ col - 1 }; col_step > -1; col_step--){
 			if ((row - row_step) == (col - col_step)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
-				} 
+				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	return available_moves;
 }
 //////////////PAWN//////////////////////
-std::set<std::pair<int, int>> pawn::moves(const board& b, const int& row, const int& col){
-	std::string moving_colour = b(row, col).GetPieceColour();
+std::set<std::pair<int, int>> pawn::moves(board& b, const int& row, const int& col){
+	std::string moving_colour{ b(row, col).GetPieceColour() };
 	std::pair<int, int> good_move;
 	std::set<std::pair<int, int>> available_moves;
+	std::shared_ptr<piece> pwn{ b(row, col).Piece() };
+	//The pawn may move one space forward if that space is empty, or 
+	//one space diagonally to take an enemy piece
+	//If the pawn is yet to move then it may jump two spaces
 	int wh_step = row + 1, bl_step = row - 1, left_take = col - 1, rt_take = col + 1;
+	int firstwh_step = row + 2, firstbl_step = row - 2;
 	//Different rules for White and Black as they can't move backwards
 	if (moving_colour == "White"){
 		//white pawn standard move
@@ -651,6 +650,13 @@ std::set<std::pair<int, int>> pawn::moves(const board& b, const int& row, const 
 				good_move.first = wh_step;
 				good_move.second = col;
 				available_moves.insert(good_move);
+				if (inputcheck::in_boardrange(firstwh_step, col)){
+					if (b(firstwh_step, col).isempty() && (pwn->FirstMove())){
+						good_move.first = firstwh_step;
+						good_move.second = col;
+						available_moves.insert(good_move);
+					}
+				}
 			}
 		}
 		//white pawn right diagonal take
@@ -679,6 +685,13 @@ std::set<std::pair<int, int>> pawn::moves(const board& b, const int& row, const 
 				good_move.first = bl_step;
 				good_move.second = col;
 				available_moves.insert(good_move);
+				if (inputcheck::in_boardrange(firstbl_step, col)){
+					if (b(firstbl_step, col).isempty() && (pwn->FirstMove())){
+						good_move.first = firstbl_step;
+						good_move.second = col;
+						available_moves.insert(good_move);
+					}
+				}
 			}
 		}
 		//white pawn right diagonal take
@@ -706,7 +719,7 @@ std::set<std::pair<int, int>> pawn::moves(const board& b, const int& row, const 
 //don't need to worry about path block as knight can jump
 //do need to worry about jumping off the board, however.
 //8 moves: r+1,col+2; r+2,col+1; r-1,col+2; r-2,col+1;r+1,col-2; r+2,col-1; r-1,c-2; r-2,c-1.
-std::set<std::pair<int, int>> knight::moves(const board& b, const int& row, const int& col){
+std::set<std::pair<int, int>> knight::moves(board& b, const int& row, const int& col){
 	std::string moving_colour = b(row, col).GetPieceColour();
 	std::pair<int, int> poss_move;
 	std::pair<int, int> good_move;
@@ -808,200 +821,183 @@ std::set<std::pair<int, int>> knight::moves(const board& b, const int& row, cons
 	return available_moves;
 }
 //////////////////QUEEN///////////////////////
-std::set<std::pair<int, int>> queen::moves(const board& b, const int& row, const int& col){
+std::set<std::pair<int, int>> queen::moves(board& b, const int& row, const int& col){
 	std::string moving_colour = b(row, col).GetPieceColour();
 	std::pair<int, int> good_move;
 	std::set<std::pair<int, int>> available_moves;
 	bool path_block = false;
 	//check spaces in front of piece (behind if black)
 	for (int for_step{ row + 1 }; for_step < (board_rows); for_step++){
-		while (!path_block){
-			if (b(for_step, col).isempty()){
+		if (b(for_step, col).isempty()){
+			good_move.first = for_step;
+			good_move.second = col;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(for_step, col).GetPieceColour()){
 				good_move.first = for_step;
 				good_move.second = col;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(for_step, col).GetPieceColour()){
-					good_move.first = for_step;
-					good_move.second = col;
-					available_moves.insert(good_move);
-				}
-			}
-
 		}
+		if (path_block){ break; }
 	}
 	//check spaces behind piece (front if black piece)
 	//reset path_block
 	path_block = false;
 	for (int back_step{ row - 1 }; back_step > (-1); back_step--){
-		while (!path_block){
-			if (b(back_step, col).isempty()){
+		if (b(back_step, col).isempty()){
+			good_move.first = back_step;
+			good_move.second = col;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(back_step, col).GetPieceColour()){
 				good_move.first = back_step;
 				good_move.second = col;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(back_step, col).GetPieceColour()){
-					good_move.first = back_step;
-					good_move.second = col;
-					available_moves.insert(good_move);
-				}
-			}
-
 		}
+		if (path_block){ break; }
 	}
 	//check spaces to the left of rook
 	path_block = false;
 	for (int left_step{ col - 1 }; left_step > (-1); left_step--){
-		while (!path_block){
-			if (b(row, left_step).isempty()){
+		if (b(row, left_step).isempty()){
+			good_move.first = row;
+			good_move.second = left_step;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path 
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(row, left_step).GetPieceColour()){
 				good_move.first = row;
 				good_move.second = left_step;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path 
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(row, left_step).GetPieceColour()){
-					good_move.first = row;
-					good_move.second = left_step;
-					available_moves.insert(good_move);
-				}
 			
-			}
-
 		}
+		if (path_block){ break; }
 	}
 	//check spaces to the right of piece
 	path_block = false;
-	for (int rt_step{ col + 1 }; rt_step < (board_cols - 1); rt_step++){
-		while (!path_block){
-			if (b(row, rt_step).isempty()){
+	for (int rt_step{ col + 1 }; rt_step < (board_cols); rt_step++){
+		if (b(row, rt_step).isempty()){
+			good_move.first = row;
+			good_move.second = rt_step;
+			available_moves.insert(good_move);
+		}
+		else{//the square has a piece on it, so block path 
+			path_block = true;
+			//add the square if enemy piece
+			if (moving_colour != b(row, rt_step).GetPieceColour()){
 				good_move.first = row;
 				good_move.second = rt_step;
 				available_moves.insert(good_move);
 			}
-			else{//the square has a piece on it, so block path 
-				path_block = true;
-				//add the square if enemy piece
-				if (moving_colour != b(row, rt_step).GetPieceColour()){
-					good_move.first = row;
-					good_move.second = rt_step;
-					available_moves.insert(good_move);
-				}
-			
-			}
-
 		}
+		if (path_block){ break; }
 	}
 	// forward right diagonal (for white)
 	path_block = false;
-	for (int row_step{ row + 1 }; row_step < (board_rows - 1); row_step++){
-		for (int col_step{ col + 1 }; col_step < (board_cols - 1); col_step++){
+	for (int row_step{ row + 1 }; row_step < (board_rows); row_step++){
+		for (int col_step{ col + 1 }; col_step < (board_cols); col_step++){
 			if ((row_step - row) == (col_step - col)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
-					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-						
-					}
-
+					}	
 				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	// forward left diagonal (for white)
 	path_block = false;
-	for (int row_step{ row + 1 }; row_step < (board_rows - 1); row_step++){
-		for (int col_step{ col - 1 }; col_step > 0; col_step--){
+	for (int row_step{ row + 1 }; row_step < (board_rows); row_step++){
+		for (int col_step{ col - 1 }; col_step > -1; col_step--){
 			if ((row_step - row) == (col - col_step)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
-
-				} 
-			}
-		}
-	}
-	// back left diagonal (for white)
-	path_block = false;
-	for (int row_step{ row - 1 }; row_step > 0; row_step--){
-		for (int col_step{ col + 1 }; col_step < (board_cols - 1); col_step++){
-			if ((row - row_step) == (col_step - col)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
-						good_move.first = row_step;
-						good_move.second = col_step;
-						available_moves.insert(good_move);
-					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
-
 				}
 			}
+			if (path_block){ break; }
 		}
 	}
 	// back left diagonal (for white)
 	path_block = false;
-	for (int row_step{ row - 1 }; row_step > 0; row_step--){
-		for (int col_step{ col - 1 }; col_step > 0; col_step--){
-			if ((row - row_step) == (col - col_step)){ //pick out diagonal
-				while (!path_block){
-					if (b(row_step, col_step).isempty()){
+	for (int row_step{ row - 1 }; row_step > -1; row_step--){
+		for (int col_step{ col + 1 }; col_step < (board_cols); col_step++){
+			if ((row - row_step) == (col_step - col)){ //pick out diagonal
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
 						good_move.first = row_step;
 						good_move.second = col_step;
 						available_moves.insert(good_move);
 					}
-					else{//the square has a piece on it, so block path 
-						path_block = true;
-						//add the square if enemy piece
-						if (moving_colour != b(row_step, col_step).GetPieceColour()){
-							good_move.first = row_step;
-							good_move.second = col_step;
-							available_moves.insert(good_move);
-						}
-					}
-				} 
+				}
 			}
+			if (path_block){ break; }
+		}
+	}
+	// back left diagonal (for white)
+	path_block = false;
+	for (int row_step{ row - 1 }; row_step > -1; row_step--){
+		for (int col_step{ col - 1 }; col_step > -1; col_step--){
+			if ((row - row_step) == (col - col_step)){ //pick out diagonal
+				if (b(row_step, col_step).isempty()){
+					good_move.first = row_step;
+					good_move.second = col_step;
+					available_moves.insert(good_move);
+				}
+				else{//the square has a piece on it, so block path 
+					path_block = true;
+					//add the square if enemy piece
+					if (moving_colour != b(row_step, col_step).GetPieceColour()){
+						good_move.first = row_step;
+						good_move.second = col_step;
+						available_moves.insert(good_move);
+					}
+				}
+			} 
+			if (path_block){ break; }
 		}
 	}
 	return available_moves;
 }
-std::set<std::pair<int, int>> king::moves(const board& b, const int& row, const int& col){
+std::set<std::pair<int, int>> king::moves(board& b, const int& row, const int& col){
 	std::string moving_colour = b(row, col).GetPieceColour();
 	std::pair<int, int> good_move;
 	std::set<std::pair<int, int>> available_moves;
@@ -1090,6 +1086,3 @@ std::set<std::pair<int, int>> king::moves(const board& b, const int& row, const 
 	}
 	return available_moves;
 }
-
-
-

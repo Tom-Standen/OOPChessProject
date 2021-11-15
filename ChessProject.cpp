@@ -28,9 +28,12 @@ int main(){
 	cout << "********** TOM STANDEN'S C++ OBJECT ORIENTED PROGRAMMING PROJECT: A TWO PLAYER CHESS GAME " << endl;
 	cout << "Before the game begins, please enter some information about the two players" << endl;
 	game Game{ game() };
+	board Board{ board() };
 	string p1name, p1colour, p2name, p2colour;
 	string ans;
 	string movefrom, moveto;
+	bool gameover = false;
+	
 	do{
 		cout << "Please enter the name of the first player: " << endl;
 		getline(cin, p1name);
@@ -60,102 +63,126 @@ int main(){
 		}
 		if (ans == "Yes"){ //instantiate the two players
 			player Player1(p1name, p1colour), Player2(p2name, p2colour);
-			((p1colour == "White") ? Game.SetTurn(make_shared<player>(Player1)):
+			((p1colour == "White") ? Game.SetTurn(make_shared<player>(Player1)) :
 				Game.SetTurn(make_shared<player>(Player2)));
-				Game.AddPlayer1(Player1);
-				Game.AddPlayer2(Player2);	
+			Game.AddPlayer1(Player1);
+			Game.AddPlayer2(Player2);
 		}
 		if (ans == "Exit"){ exit(0); }
 
 	} while (ans == "Repeat");
+	
+	while (!gameover){
+		Board.print_board();
+		cout << endl;
+		shared_ptr<player> turn = Game.Turn();
+		cout << "Turn number: " << Game.TurnNumber() << ". " << turn->GetName() << "to move" << endl;
+		bool good_move{ false };
 
-	board Board{ board() };
-	Board.print_board();
-	cout << endl;
-	shared_ptr<player> turn = Game.Turn();
-	cout << "It is " << turn->GetName()<< "'s turn" << endl;
-	bool good_move{ false };
-	//do while for if the move has been requested successfully
-	do{
-		cout << "Please choose a piece or pawn to move by entering the Letter:Number code displayed on the side of the board" << endl;
-		getline(cin, movefrom);
-		while (!inputcheck::good_code(movefrom)){
-			cout << "Sorry, please make sure that you enter a valid square code, [A-H:1-8]" << endl;
-			cout << "Piece to move: ";
-			getline(cin, movefrom);
-		}
-		pair<int, int> movefrom_pair = inputcheck::decode(movefrom);
-		//check that the player has selected a square with a piece and that it belongs to them
-		while (!(turn->MyPiece(Board(movefrom_pair.first, movefrom_pair.second)))){
-			cout << "There is no " << turn->GetColour() << " piece that you can move at " << movefrom << endl;
-			cout << "Please choose another square" << endl;
+		//do while for if the move has been requested successfully
+		do{
+			cout << "Please choose a piece or pawn to move by entering the Letter:Number code displayed on the side of the board" << endl;
 			getline(cin, movefrom);
 			while (!inputcheck::good_code(movefrom)){
 				cout << "Sorry, please make sure that you enter a valid square code, [A-H:1-8]" << endl;
 				cout << "Piece to move: ";
 				getline(cin, movefrom);
 			}
-			movefrom_pair = inputcheck::decode(movefrom);
-		}
-		cout << movefrom_pair.first << movefrom_pair.second << endl;
-		cout << "Please choose a square to move to by entering its Letter:Number code" << endl;
-		getline(cin, moveto);
-		while (!inputcheck::good_code(moveto)){
-			cout << "Sorry, please make sure that you enter a valid square code, [A-H:1-8]" << endl;
-			cout << "Square to move to: ";
-			getline(cin, moveto);
-		}
-		pair<int, int> moveto_pair = inputcheck::decode(moveto);
-		cout << moveto_pair.first << moveto_pair.second << endl;
-		//save a pointer to the piece we are trying to move
-		std::shared_ptr<piece> moving_piece;
-		moving_piece = Board(movefrom_pair.first, movefrom_pair.second).Piece();
-		std::string moving_name = moving_piece->GetName();
-		//try to get the possible moves, if they aren't any then throw error
-		set<pair<int, int>> move_set = moving_piece->moves(Board, movefrom_pair.first, movefrom_pair.second);
-		
-		for (auto set_it = move_set.begin(); set_it != move_set.end(); set_it++){
-			std::string possible_mv = inputcheck::recode((*set_it).first, (*set_it).second);
-			cout << possible_mv << endl;
-		}
-
-		stringstream ss;
-		ss << movefrom << "->" << moveto;
-		std::string complete_move{ ss.str() };
-
-
-		//if the deisred move is in move_set then proceed with moving piece
-		//if not start the process of asking for move again
-		if (move_set.find(moveto_pair) == move_set.end()){
-			cout << "The requested move: " << complete_move << " could not be executed." << endl;
-			if (move_set.empty()){
-				cout << "Sorry, the " << moving_name << " at " << movefrom << " has no available moves" << endl;
+			pair<int, int> movefrom_pair = inputcheck::decode(movefrom);
+			//check that the player has selected a square with a piece and that it belongs to them
+			while (!(turn->MyPiece(Board(movefrom_pair.first, movefrom_pair.second)))){
+				cout << "There is no " << turn->GetColour() << " piece that you can move at " << movefrom << endl;
+				cout << "Please choose another square" << endl;
+				getline(cin, movefrom);
+				while (!inputcheck::good_code(movefrom)){
+					cout << "Sorry, please make sure that you enter a valid square code, [A-H:1-8]" << endl;
+					cout << "Piece to move: ";
+					getline(cin, movefrom);
+				}
+				movefrom_pair = inputcheck::decode(movefrom);
 			}
-			else{
-				cout << "The available moves for the " << moving_name << " at " << movefrom << " are:" << endl;
-				for (auto set_it = move_set.begin(); set_it != move_set.end(); set_it++){
-					std::string possible_mv = inputcheck::recode((*set_it).first, (*set_it).second);
-					cout << possible_mv << endl;
+			cout << movefrom_pair.first << movefrom_pair.second << endl;
+			cout << "Please choose a square to move to by entering its Letter:Number code" << endl;
+			getline(cin, moveto);
+			while (!inputcheck::good_code(moveto)){
+				cout << "Sorry, please make sure that you enter a valid square code, [A-H:1-8]" << endl;
+				cout << "Square to move to: ";
+				getline(cin, moveto);
+			}
+			pair<int, int> moveto_pair = inputcheck::decode(moveto);
+			cout << moveto_pair.first << moveto_pair.second << endl;
+			//save a pointer to the piece we are trying to move
+			shared_ptr<piece> moving_piece;
+			moving_piece = Board(movefrom_pair.first, movefrom_pair.second).Piece();
+			string moving_name = moving_piece->GetName();
+			//try to get the possible moves, if they aren't any then throw error
+			set<pair<int, int>> move_set = moving_piece->moves(Board, movefrom_pair.first, movefrom_pair.second);
+
+			for (auto set_it = move_set.begin(); set_it != move_set.end(); set_it++){
+				string possible_mv = inputcheck::recode((*set_it).first, (*set_it).second);
+				cout << possible_mv << endl;
+			}
+
+			stringstream ss;
+			ss << movefrom << "->" << moveto;
+			string complete_move{ ss.str() };
+
+
+			//if the deisred move is in move_set then proceed with moving piece
+			//if not start the process of asking for move again
+			if (move_set.find(moveto_pair) == move_set.end()){
+				cout << "The requested move: " << complete_move << " could not be executed." << endl;
+				if (move_set.empty()){
+					cout << "Sorry, the " << moving_name << " at " << movefrom << " has no available moves" << endl;
+				}
+				else{
+					cout << "The available moves for the " << moving_name << " at " << movefrom << " are:" << endl;
+					for (auto set_it = move_set.begin(); set_it != move_set.end(); set_it++){
+						string possible_mv = inputcheck::recode((*set_it).first, (*set_it).second);
+						cout << possible_mv << endl;
+					}
 				}
 			}
-		}
-		else{
-			cout << "Yes that move can be made" << endl;
-			turn->AddMove(complete_move);
-			good_move = true;
-		}
+			else{
+				cout << "Yes that move can be made" << endl;
+				Game.SetMoveFrom(movefrom_pair);
+				Game.SetMoveTo(moveto_pair);
+				//turn->AddMove(complete_move);
+				good_move = true;
 	
-	} while (!good_move);
+				//if its the first move for a pawn, queen or castle then remove it
+				if (moving_piece->FirstMove()){ moving_piece->Moved(); }
+			
+			}
+
+		} while (!good_move);
 
 
-	/*unique_ptr<string[]> AtoH(new string[board_cols]);
-	AtoH[0] = "A"; AtoH[1] = "B"; AtoH[2] = "C"; AtoH[3] = "D";
-	AtoH[4] = "E"; AtoH[5] = "F"; AtoH[6] = "G"; AtoH[7] = "H";
+		//test out moving a pawn from A2 to A3
+		
+		cout << "move executed" << endl;
 
-	//"B", "C", "D", "E", "F", "G", "H"
-	//vector<string> AtoH;
-	//AtoH.push_back("A");
-	*/
+		Board((Game.MoveTo()).first, (Game.MoveTo()).second) = move(Board((Game.MoveFrom()).first, (Game.MoveFrom()).second));
+
+		//Change turn from one player to the other
+		((*turn) == Game.Player1() ?
+			Game.SetTurn(make_shared<player>(Game.Player2())) :
+			Game.SetTurn(make_shared<player>(Game.Player1())));
+
+		//add a turn to the game
+		Game.AddTurn();
+
+
+
+		/*unique_ptr<string[]> AtoH(new string[board_cols]);
+		AtoH[0] = "A"; AtoH[1] = "B"; AtoH[2] = "C"; AtoH[3] = "D";
+		AtoH[4] = "E"; AtoH[5] = "F"; AtoH[6] = "G"; AtoH[7] = "H";
+
+		//"B", "C", "D", "E", "F", "G", "H"
+		//vector<string> AtoH;
+		//AtoH.push_back("A");
+		*/
+	}
 	return 0;
 }
 

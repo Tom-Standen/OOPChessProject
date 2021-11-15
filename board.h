@@ -26,7 +26,7 @@ public:
 	void init(); //initialize the board
 	void print_board() const; //output the board to the terminal
 	void print_checkerboard() const; //output the main checkers to the terminal
-	const square & operator()(const int a, const int b) const { return m_square_2Dvector[a][b]; }
+	square & operator()(const int a, const int b){ return m_square_2Dvector[a][b]; }
 	//check that the squares not empty and that the piece belongs to the player
 	bool valid_move() const;//piece moving_piece, square int row, int col, square end_pos) const {}; //check if the move can be made
 	//void update_board(square int row, int col, square end_pos) {}; //if valid_move alter the piece locations, and identify any taken pieces
