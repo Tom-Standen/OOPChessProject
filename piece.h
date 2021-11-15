@@ -90,5 +90,3 @@ public:
 	virtual ~king(){}
 	std::set<std::pair<int, int>> moves(board&, const int&, const int&) override; // king standard move is one space f,b,l,r and diag (+9,-9,+7,-7,+8,-8,+1,-1)
 };
-
-

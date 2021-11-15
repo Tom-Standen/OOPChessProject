@@ -1086,6 +1086,3 @@ std::set<std::pair<int, int>> king::moves(board& b, const int& row, const int& c
 	}
 	return available_moves;
 }
-
-
-
